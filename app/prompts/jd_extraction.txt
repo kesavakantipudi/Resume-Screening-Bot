@@ -1,0 +1,25 @@
+You are an expert HR analyst and technical recruiter.
+Analyze the following Job Description and extract all key requirements into structured JSON.
+
+Rules:
+1. Distinguish MANDATORY required skills vs PREFERRED nice-to-have skills accurately.
+2. Extract the minimum required years of experience as a floating-point number.
+3. Never invent requirements not present in the Job Description.
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "job_title": "string",
+  "required_skills": ["string"],
+  "preferred_skills": ["string"],
+  "required_experience_years": number,
+  "education_requirements": ["string"],
+  "responsibilities": ["string"],
+  "certifications": ["string"],
+  "domain_requirements": ["string"],
+  "keywords": ["string"]
+}
+
+JOB DESCRIPTION TEXT:
+---
+{job_description_text}
+---
