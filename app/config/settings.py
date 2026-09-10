@@ -15,8 +15,8 @@ class Settings(BaseSettings):
 
     # AI Provider Settings (Google Gemini)
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key")
-    GEMINI_MODEL: str = Field(default="gemini-2.5-flash", description="Primary Gemini model name (Free Tier)")
-    GEMINI_FALLBACK_MODELS: str = Field(default="gemini-2.5-flash-lite,gemini-1.5-flash", description="Comma-separated fallback model names (Free Tier)")
+    GEMINI_MODEL: str = Field(default="gemini-3.5-flash-lite", description="Primary Gemini model name (Free Tier)")
+    GEMINI_FALLBACK_MODELS: str = Field(default="gemini-3.1-flash-lite,gemini-3.6-flash", description="Comma-separated fallback model names (Free Tier)")
     GEMINI_MAX_RETRIES: int = Field(default=1, description="Max retries per model on rate-limit/quota errors")
     GEMINI_RETRY_DELAY: float = Field(default=2.0, description="Delay in seconds before retrying a model")
 
