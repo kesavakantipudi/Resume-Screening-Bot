@@ -56,9 +56,10 @@ class GeminiProvider(BaseAIProvider):
         if any(term in error_msg for term in ["400", "invalid argument", "bad request", "jsondecodeerror", "validationerror"]):
             return False
 
-        # Quota/Rate limit markers
+        # Quota/Rate limit/Temporary capacity markers
         quota_markers = [
             "429",
+            "503",
             "rate limit",
             "ratelimit",
             "quota",
@@ -67,7 +68,11 @@ class GeminiProvider(BaseAIProvider):
             "too many requests",
             "overloaded",
             "capacity",
-            "exhausted"
+            "exhausted",
+            "unavailable",
+            "high demand",
+            "servererror",
+            "temporarily"
         ]
         return any(marker in error_type or marker in error_msg for marker in quota_markers)
 
