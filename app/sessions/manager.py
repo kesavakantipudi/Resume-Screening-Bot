@@ -383,7 +383,7 @@ class SessionManager:
             return report_text
 
         except Exception as e:
-            session_obj.status = SessionState.FAILED
+            self._update_session_status(session_obj)
             db.commit()
             logger.error(f"Analysis pipeline error: {e}", exc_info=True)
             return f"⚠️ Candidate analysis temporarily failed: {str(e)}\nPlease try again with ANALYZE."
