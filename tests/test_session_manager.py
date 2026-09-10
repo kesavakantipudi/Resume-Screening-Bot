@@ -91,7 +91,7 @@ async def test_duplicate_resume_upload_deduplicated():
         ]
     )
     resp1 = await manager.handle_message(resume_msg1)
-    assert "resumes received" in resp1
+    assert "I received 1 resumes" in resp1
 
     # 2. Upload identical resume attachment again
     resp2 = await manager.handle_message(resume_msg1)

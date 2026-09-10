@@ -61,6 +61,8 @@ class RecruitmentReportGenerator:
         if result.mandatory_failed:
             mandatory_warning = f"\n⚠️ MANDATORY REQUIREMENT OVERRIDE:\n{result.mandatory_failure_reason}\n"
 
+        courses_str = "\n".join([f"  • {c}" for c in result.recommended_courses]) if result.recommended_courses else "  No specific courses required"
+
         lines = [
             f"👤 CANDIDATE SCREENING REPORT: {result.candidate_name}",
             "═" * 38,
@@ -96,6 +98,9 @@ class RecruitmentReportGenerator:
             "",
             "⚠️ Concerns / Gaps:",
             concerns_str,
+            "",
+            "📚 Recommended Courses / Upskilling:",
+            courses_str,
             "",
             "🎯 Recruiter Recommendation:",
             f"  {result.recruiter_recommendation}",

@@ -32,6 +32,7 @@ class EvaluationSchema(BaseModel):
     concerns: List[str] = Field(default_factory=list)
     potential_red_flags: List[str] = Field(default_factory=list)
     recruiter_recommendation: str = Field(default="")
+    recommended_courses: List[str] = Field(default_factory=list)
 
 
 class CandidateMatcher:

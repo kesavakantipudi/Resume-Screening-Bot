@@ -202,7 +202,7 @@ class SessionManager:
             if session_obj.resume_count > 0:
                 responses.append(
                     f"Job Description received successfully.\n"
-                    f"You have {session_obj.resume_count} candidate(s) ready for analysis.\n"
+                    f"You have {session_obj.resume_count} resumes ready for analysis.\n"
                     "Send ANALYZE to start the screening."
                 )
             else:

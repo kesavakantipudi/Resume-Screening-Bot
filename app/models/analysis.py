@@ -51,6 +51,7 @@ class CandidateAnalysisResult(BaseModel):
     concerns: List[str] = Field(default_factory=list)
     potential_red_flags: List[str] = Field(default_factory=list)
     recruiter_recommendation: str = Field(default="")
+    recommended_courses: List[str] = Field(default_factory=list)
     evidence_notes: List[EvidenceItem] = Field(default_factory=list)
     model_used: str = Field(default="gemini-3.5-flash-lite", description="Gemini model used for analysis")
 

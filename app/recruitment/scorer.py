@@ -163,6 +163,10 @@ class ATSScorer:
                     f"Downgraded candidate {candidate_data.candidate_name} decision to {decision} due to mandatory failure."
                 )
 
+        recommended_courses = eval_data.recommended_courses
+        if not recommended_courses and match_data.missing_skills:
+            recommended_courses = [f"Complete Course on {skill} (Coursera/Udemy)" for skill in match_data.missing_skills[:3]]
+
         return CandidateAnalysisResult(
             candidate_name=candidate_data.candidate_name,
             score=score_breakdown,
@@ -181,6 +185,7 @@ class ATSScorer:
             concerns=eval_data.concerns or ([] if not mandatory_failed else [mandatory_failure_reason]),
             potential_red_flags=eval_data.potential_red_flags,
             recruiter_recommendation=eval_data.recruiter_recommendation or f"Decision: {decision.value}",
+            recommended_courses=recommended_courses,
             evidence_notes=match_data.evidence_notes,
             model_used=model_used or settings.GEMINI_MODEL
         )
