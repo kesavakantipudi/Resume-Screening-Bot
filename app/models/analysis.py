@@ -52,7 +52,7 @@ class CandidateAnalysisResult(BaseModel):
     potential_red_flags: List[str] = Field(default_factory=list)
     recruiter_recommendation: str = Field(default="")
     evidence_notes: List[EvidenceItem] = Field(default_factory=list)
-    model_used: str = Field(default="gemini-3.8-flash", description="Gemini model used for analysis")
+    model_used: str = Field(default="gemini-2.5-flash", description="Gemini model used for analysis")
 
 
 class CandidateAnalysisDB(Base):
