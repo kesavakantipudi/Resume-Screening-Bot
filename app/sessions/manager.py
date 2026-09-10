@@ -351,22 +351,27 @@ class SessionManager:
                     )
                     analysis_result.candidate_id = cand_db.id
 
-                    # Save to DB
+                    # Save to DB (update in-place if analysis already exists to avoid unique constraint flush conflicts)
                     if cand_db.analysis:
-                        db.delete(cand_db.analysis)
+                        cand_db.analysis.score = analysis_result.score.overall
+                        cand_db.analysis.decision = analysis_result.decision
+                        cand_db.analysis.mandatory_failed = analysis_result.mandatory_failed
+                        cand_db.analysis.mandatory_failure_reason = analysis_result.mandatory_failure_reason
+                        cand_db.analysis.analysis_json = json.dumps(analysis_result.model_dump())
+                        analysis_db = cand_db.analysis
+                    else:
+                        analysis_db = CandidateAnalysisDB(
+                            id=f"ANALYSIS-{uuid.uuid4().hex[:8]}",
+                            candidate_id=cand_db.id,
+                            score=analysis_result.score.overall,
+                            decision=analysis_result.decision,
+                            mandatory_failed=analysis_result.mandatory_failed,
+                            mandatory_failure_reason=analysis_result.mandatory_failure_reason,
+                            analysis_json=json.dumps(analysis_result.model_dump())
+                        )
+                        db.add(analysis_db)
 
-                    analysis_db = CandidateAnalysisDB(
-                        id=f"ANALYSIS-{uuid.uuid4().hex[:8]}",
-                        candidate_id=cand_db.id,
-                        score=analysis_result.score.overall,
-                        decision=analysis_result.decision,
-                        mandatory_failed=analysis_result.mandatory_failed,
-                        mandatory_failure_reason=analysis_result.mandatory_failure_reason,
-                        analysis_json=json.dumps(analysis_result.model_dump())
-                    )
-                    db.add(analysis_db)
                     db.flush()
-
                     return analysis_result
 
             tasks = [_analyze_single_candidate(c) for c in candidates]
@@ -383,6 +388,7 @@ class SessionManager:
             return report_text
 
         except Exception as e:
+            db.rollback()
             self._update_session_status(session_obj)
             db.commit()
             logger.error(f"Analysis pipeline error: {e}", exc_info=True)
