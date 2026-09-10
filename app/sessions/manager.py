@@ -137,6 +137,7 @@ class SessionManager:
 
         jd_added = False
         resumes_added = 0
+        resumes_updated = 0
         uncertain_files = []
         errors = []
 
@@ -161,8 +162,11 @@ class SessionManager:
                     await self._save_job_description_db(db, session_obj, attachment.filename, extracted_text)
                     jd_added = True
                 elif doc_type == "resume":
-                    await self._save_candidate_resume_db(db, session_obj, attachment.filename, extracted_text)
-                    resumes_added += 1
+                    is_new = await self._save_candidate_resume_db(db, session_obj, attachment.filename, extracted_text)
+                    if is_new:
+                        resumes_added += 1
+                    else:
+                        resumes_updated += 1
                 else:
                     # Uncertain classification
                     uncertain_files.append(attachment.filename)
@@ -187,29 +191,32 @@ class SessionManager:
                     "Should I treat this document as the Job Description or a candidate resume? Reply with /JD or /RESUME."
                 )
 
-        if jd_added and resumes_added > 0:
+        total_processed_resumes = resumes_added + resumes_updated
+
+        if jd_added and total_processed_resumes > 0:
             responses.append(
-                f"Received the Job Description and {session_obj.resume_count} resumes.\n"
+                f"Received the Job Description and processed {total_processed_resumes} resume(s) ({session_obj.resume_count} unique candidate(s) in total).\n"
                 "Send ANALYZE when you're ready to start screening."
             )
         elif jd_added:
             if session_obj.resume_count > 0:
                 responses.append(
                     f"Job Description received successfully.\n"
-                    f"You have {session_obj.resume_count} resumes ready for analysis.\n"
+                    f"You have {session_obj.resume_count} candidate(s) ready for analysis.\n"
                     "Send ANALYZE to start the screening."
                 )
             else:
                 responses.append("Job Description received successfully.\nNow upload the candidate resumes.")
-        elif resumes_added > 0:
+        elif total_processed_resumes > 0:
+            status_desc = f"Received {resumes_added} new resume(s)" if resumes_added > 0 else f"Updated {resumes_updated} existing candidate resume(s)"
             if session_obj.jd_received:
                 responses.append(
-                    f"{session_obj.resume_count} resumes received.\n"
+                    f"{status_desc} ({session_obj.resume_count} candidate(s) in total).\n"
                     "Send ANALYZE when ready."
                 )
             else:
                 responses.append(
-                    f"I received {session_obj.resume_count} resumes, but I don't have a Job Description yet.\n"
+                    f"{status_desc} ({session_obj.resume_count} candidate(s) in total), but I don't have a Job Description yet.\n"
                     "Please upload or send the Job Description before I can analyze the candidates."
                 )
 
@@ -228,22 +235,24 @@ class SessionManager:
             if session_obj.resume_count > 0:
                 return (
                     f"Job Description received successfully.\n"
-                    f"You have {session_obj.resume_count} resumes ready for analysis.\n"
+                    f"You have {session_obj.resume_count} candidate(s) ready for analysis.\n"
                     "Send ANALYZE to start the screening."
                 )
             else:
                 return "Job Description received successfully.\nPlease upload the candidate resumes."
 
         elif doc_type == "resume":
-            await self._save_candidate_resume_db(db, session_obj, "Pasted Resume Text", text)
+            is_new = await self._save_candidate_resume_db(db, session_obj, "Pasted Resume Text", text)
             self._update_session_status(session_obj)
             db.commit()
 
+            status_desc = "Received 1 new resume" if is_new else "Updated existing candidate resume"
+
             if session_obj.jd_received:
-                return f"{session_obj.resume_count} resumes received.\nSend ANALYZE when ready."
+                return f"{status_desc} ({session_obj.resume_count} candidate(s) in total).\nSend ANALYZE when ready."
             else:
                 return (
-                    f"I received {session_obj.resume_count} resumes, but I don't have a Job Description yet.\n"
+                    f"{status_desc} ({session_obj.resume_count} candidate(s) in total), but I don't have a Job Description yet.\n"
                     "Please upload or send the Job Description before I can analyze the candidates."
                 )
         else:
@@ -270,16 +279,47 @@ class SessionManager:
 
     async def _save_candidate_resume_db(
         self, db: Session, session_obj: RecruitmentSession, filename: str, raw_text: str
-    ):
-        cand_db = CandidateDB(
-            id=f"CAND-{uuid.uuid4().hex[:8]}",
-            session_id=session_obj.id,
-            filename=filename,
-            name=filename,
-            raw_text=raw_text,
-            structured_data_json="{}"
-        )
-        db.add(cand_db)
+    ) -> bool:
+        """
+        Save candidate resume to DB. If a candidate with the same filename or matching text
+        already exists in this session, update the existing candidate instead of creating a duplicate.
+        Returns True if a new candidate was created, False if an existing candidate was updated.
+        """
+        clean_raw = raw_text.strip()
+        existing = None
+
+        if session_obj.candidates:
+            for cand in session_obj.candidates:
+                # Match by filename (excluding generic pasted text)
+                if filename and filename != "Pasted Resume Text" and cand.filename and cand.filename.lower() == filename.lower():
+                    existing = cand
+                    break
+                # Match by exact raw text content
+                if cand.raw_text and cand.raw_text.strip() == clean_raw:
+                    existing = cand
+                    break
+
+        if existing:
+            logger.info(f"Duplicate document detected ({filename}). Updating existing candidate {existing.id}.")
+            existing.filename = filename
+            existing.raw_text = raw_text
+            existing.structured_data_json = "{}"
+            if existing.analysis:
+                db.delete(existing.analysis)
+            db.flush()
+            return False
+        else:
+            cand_db = CandidateDB(
+                id=f"CAND-{uuid.uuid4().hex[:8]}",
+                session_id=session_obj.id,
+                filename=filename,
+                name=filename,
+                raw_text=raw_text,
+                structured_data_json="{}"
+            )
+            db.add(cand_db)
+            db.flush()
+            return True
 
     def _update_session_status(self, session_obj: RecruitmentSession):
         has_jd = session_obj.jd_received

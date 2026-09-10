@@ -69,3 +69,30 @@ async def test_session_manager_flow():
     resp = await manager.handle_message(detail_msg)
     assert "CANDIDATE SCREENING REPORT" in resp
     assert "ATS Score:" in resp
+
+
+@pytest.mark.asyncio
+async def test_duplicate_resume_upload_deduplicated():
+    Base.metadata.drop_all(bind=engine)
+    init_db()
+    manager = SessionManager()
+
+    # 1. Upload candidate resume attachment
+    resume_msg1 = UnifiedMessage(
+        platform="telegram",
+        user_id="user_dup",
+        conversation_id="chat_dup",
+        attachments=[
+            UnifiedAttachment(
+                filename="alice_resume.pdf",
+                file_id="a1",
+                data_bytes=b"Alice Smith\nPython Developer\nExperience: 3 years"
+            )
+        ]
+    )
+    resp1 = await manager.handle_message(resume_msg1)
+    assert "Received 1 new resume" in resp1
+
+    # 2. Upload identical resume attachment again
+    resp2 = await manager.handle_message(resume_msg1)
+    assert "Updated 1 existing candidate resume" in resp2
