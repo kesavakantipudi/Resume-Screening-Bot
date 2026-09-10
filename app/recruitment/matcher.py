@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field
 from app.models.job import JobDescriptionData
 from app.models.candidate import CandidateData
 from app.models.analysis import EvidenceItem
-from app.ai.gemini import GeminiProvider
+from app.ai.base import BaseAIProvider
+from app.ai.fallback_provider import FallbackAIProvider
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +35,8 @@ class EvaluationSchema(BaseModel):
 
 
 class CandidateMatcher:
-    def __init__(self, ai_provider: GeminiProvider = None):
-        self.ai_provider = ai_provider or GeminiProvider()
+    def __init__(self, ai_provider: BaseAIProvider = None):
+        self.ai_provider = ai_provider or FallbackAIProvider()
         with open(MATCHING_PROMPT_PATH, "r", encoding="utf-8") as f:
             self.matching_template = f.read()
         with open(EVALUATION_PROMPT_PATH, "r", encoding="utf-8") as f:

@@ -1,7 +1,8 @@
 import logging
 from pathlib import Path
 from app.models.candidate import CandidateData
-from app.ai.gemini import GeminiProvider
+from app.ai.base import BaseAIProvider
+from app.ai.fallback_provider import FallbackAIProvider
 
 logger = logging.getLogger(__name__)
 
@@ -9,8 +10,8 @@ PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "resume_extra
 
 
 class ResumeAnalyzer:
-    def __init__(self, ai_provider: GeminiProvider = None):
-        self.ai_provider = ai_provider or GeminiProvider()
+    def __init__(self, ai_provider: BaseAIProvider = None):
+        self.ai_provider = ai_provider or FallbackAIProvider()
         with open(PROMPT_PATH, "r", encoding="utf-8") as f:
             self.prompt_template = f.read()
 

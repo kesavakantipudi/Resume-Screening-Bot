@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     GEMINI_MAX_RETRIES: int = Field(default=1, description="Max retries per model on rate-limit/quota errors")
     GEMINI_RETRY_DELAY: float = Field(default=2.0, description="Delay in seconds before retrying a model")
 
+    # AI Provider Settings (Groq Fallback)
+    GROQ_API_KEY: str = Field(default="", description="Groq API Key for LLM fallback")
+    GROQ_MODEL: str = Field(default="llama-3.3-70b-versatile", description="Default Groq model name")
+
     @property
     def gemini_model_chain(self) -> list[str]:
         chain = [self.GEMINI_MODEL]

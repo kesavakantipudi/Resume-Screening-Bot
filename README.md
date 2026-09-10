@@ -9,7 +9,8 @@ HireLens AI automatically parses documents (PDF, DOCX, TXT), extracts structured
 ## Key Features
 
 - **Multi-Platform Adapter Layer**: Platform-agnostic architecture supporting Telegram, Discord, WhatsApp Cloud API, and Slack.
-- **Google Gemini API Powered**: Structured JSON extraction for JD requirements, candidate resumes, evidence-based matching, and qualitative recruiter evaluations.
+- **Google Gemini API Primary Provider**: Structured JSON extraction for JD requirements, candidate resumes, evidence-based matching, and qualitative recruiter evaluations.
+- **Groq API Fallback Provider**: Automatic LLM fallback to Groq (`llama-3.3-70b-versatile`) when Google Gemini API encounters rate limits (429), quota limits, 503 errors, or temporary API failures.
 - **Deterministic ATS Scoring**: Weighted formula (Required Skills 35%, Experience 20%, Responsibilities 15%, Education 10%, Preferred Skills 10%, Projects 5%, Certifications 5%).
 - **Mandatory Requirement Override Engine**: Flags candidate experience gaps or missing critical required skills, downgrading hiring recommendations regardless of raw numerical scores.
 - **Asynchronous Batch Candidate Processing**: Parallel document processing with concurrency controls using `asyncio.Semaphore`.
@@ -39,9 +40,11 @@ hirelens-ai/
 │   │   ├── whatsapp.py
 │   │   ├── slack.py
 │   │   └── factory.py              # Platform Adapter Factory
-│   ├── ai/                         # AI Provider Layer
-│   │   ├── base.py
-│   │   └── gemini.py               # Google Gemini SDK & JSON mode
+│   ├── ai/                         # AI Provider Layer (Gemini Primary -> Groq Fallback)
+│   │   ├── base.py                 # BaseAIProvider abstract interface
+│   │   ├── gemini.py               # Google Gemini Provider
+│   │   ├── groq_provider.py        # Groq Fallback Provider
+│   │   └── fallback_provider.py    # FallbackAIProvider Orchestrator
 │   ├── documents/                  # Document Parsers & File Handlers
 │   │   ├── pdf_parser.py           # PyMuPDF parser
 │   │   ├── docx_parser.py          # python-docx parser
@@ -66,6 +69,9 @@ hirelens-ai/
 │       └── ranking.txt
 ├── tests/                          # Test Suite (pytest)
 │   ├── test_document_parsers.py
+│   ├── test_gemini_fallback.py
+│   ├── test_groq_fallback.py
+│   ├── test_jd_validation.py
 │   ├── test_scorer.py
 │   └── test_session_manager.py
 ├── .env.example
@@ -94,11 +100,16 @@ pip install -r requirements.txt
 Copy `.env.example` to `.env` and fill in your credentials:
 
 ```env
+# AI Provider Settings (Google Gemini Primary)
 GEMINI_API_KEY=your_google_gemini_api_key
-GEMINI_MODEL=gemini-3.8-flash
-GEMINI_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.5-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-3.1-flash-lite,gemini-3.6-flash
 GEMINI_MAX_RETRIES=1
 GEMINI_RETRY_DELAY=2
+
+# AI Provider Settings (Groq Fallback)
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=llama-3.3-70b-versatile
 
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 DISCORD_BOT_TOKEN=your_discord_bot_token

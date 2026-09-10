@@ -365,7 +365,7 @@ class SessionManager:
                         analysis_json=json.dumps(analysis_result.model_dump())
                     )
                     db.add(analysis_db)
-                    db.commit()
+                    db.flush()
 
                     return analysis_result
 
