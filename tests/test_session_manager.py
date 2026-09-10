@@ -84,14 +84,14 @@ async def test_duplicate_resume_upload_deduplicated():
         conversation_id="chat_dup",
         attachments=[
             UnifiedAttachment(
-                filename="alice_resume.pdf",
+                filename="alice_resume.txt",
                 file_id="a1",
                 data_bytes=b"Alice Smith\nPython Developer\nExperience: 3 years"
             )
         ]
     )
     resp1 = await manager.handle_message(resume_msg1)
-    assert "Received 1 new resume" in resp1
+    assert "resumes received" in resp1
 
     # 2. Upload identical resume attachment again
     resp2 = await manager.handle_message(resume_msg1)

@@ -195,7 +195,7 @@ class SessionManager:
 
         if jd_added and total_processed_resumes > 0:
             responses.append(
-                f"Received the Job Description and processed {total_processed_resumes} resume(s) ({session_obj.resume_count} unique candidate(s) in total).\n"
+                f"Received the Job Description and {session_obj.resume_count} resumes.\n"
                 "Send ANALYZE when you're ready to start screening."
             )
         elif jd_added:
@@ -207,16 +207,26 @@ class SessionManager:
                 )
             else:
                 responses.append("Job Description received successfully.\nNow upload the candidate resumes.")
-        elif total_processed_resumes > 0:
-            status_desc = f"Received {resumes_added} new resume(s)" if resumes_added > 0 else f"Updated {resumes_updated} existing candidate resume(s)"
+        elif resumes_added > 0:
             if session_obj.jd_received:
                 responses.append(
-                    f"{status_desc} ({session_obj.resume_count} candidate(s) in total).\n"
+                    f"{resumes_added} resumes received ({session_obj.resume_count} candidate(s) in total).\n"
                     "Send ANALYZE when ready."
                 )
             else:
                 responses.append(
-                    f"{status_desc} ({session_obj.resume_count} candidate(s) in total), but I don't have a Job Description yet.\n"
+                    f"I received {resumes_added} resumes, but I don't have a Job Description yet ({session_obj.resume_count} candidate(s) in total).\n"
+                    "Please upload or send the Job Description before I can analyze the candidates."
+                )
+        elif resumes_updated > 0:
+            if session_obj.jd_received:
+                responses.append(
+                    f"Updated {resumes_updated} existing candidate resume(s) ({session_obj.resume_count} candidate(s) in total).\n"
+                    "Send ANALYZE when ready."
+                )
+            else:
+                responses.append(
+                    f"Updated {resumes_updated} existing candidate resume(s) ({session_obj.resume_count} candidate(s) in total), but I don't have a Job Description yet.\n"
                     "Please upload or send the Job Description before I can analyze the candidates."
                 )
 
