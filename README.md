@@ -95,7 +95,10 @@ Copy `.env.example` to `.env` and fill in your credentials:
 
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.8-flash
+GEMINI_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.5-flash-lite
+GEMINI_MAX_RETRIES=1
+GEMINI_RETRY_DELAY=2
 
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 DISCORD_BOT_TOKEN=your_discord_bot_token
