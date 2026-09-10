@@ -274,8 +274,12 @@ class SessionManager:
     async def _save_job_description_db(
         self, db: Session, session_obj: RecruitmentSession, filename: str, raw_text: str
     ):
+        # If replacing an existing Job Description, clear candidates from the old JD
         if session_obj.job_description:
             db.delete(session_obj.job_description)
+            if session_obj.candidates:
+                for cand in list(session_obj.candidates):
+                    db.delete(cand)
             db.commit()
 
         job_db = JobDescriptionDB(
@@ -286,6 +290,7 @@ class SessionManager:
             structured_data_json="{}"
         )
         db.add(job_db)
+        db.flush()
 
     async def _save_candidate_resume_db(
         self, db: Session, session_obj: RecruitmentSession, filename: str, raw_text: str
