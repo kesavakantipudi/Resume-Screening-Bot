@@ -6,7 +6,7 @@ Provide professional recruiter-oriented insights:
 3. 1-3 key job-relevant concerns or skill gaps.
 4. Any potential red flags (unexplained gaps, job hopping, or unverified claims).
 5. Final Recruiter Recommendation (e.g. "RECOMMENDED FOR TECHNICAL INTERVIEW", "REQUIRES RECRUITER REVIEW", "NOT RECOMMENDED FOR THIS ROLE").
-6. 2-3 specific recommended courses, tutorials, or certifications to bridge the identified skill gaps.
+6. 2-3 specific recommended courses, tutorials, or certifications with clickable search/course URLs (e.g. https://www.coursera.org/search?query=SkillName or https://www.udemy.com/courses/search/?q=SkillName) to bridge the identified skill gaps.
 
 DO NOT use casual terms like "This guy is good".
 DO NOT mention "As an AI model...".
@@ -17,7 +17,7 @@ Return ONLY valid JSON matching this schema:
   "concerns": ["string"],
   "potential_red_flags": ["string"],
   "recruiter_recommendation": "string",
-  "recommended_courses": ["string"]
+  "recommended_courses": ["Course Title — https://..."]
 }
 
 MATCH ANALYSIS:

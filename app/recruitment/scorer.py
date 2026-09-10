@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from app.models.job import JobDescriptionData
 from app.models.candidate import CandidateData
 from app.models.analysis import ATSScoreBreakdown, DecisionEnum, CandidateAnalysisResult, EvidenceItem
@@ -163,9 +164,18 @@ class ATSScorer:
                     f"Downgraded candidate {candidate_data.candidate_name} decision to {decision} due to mandatory failure."
                 )
 
-        recommended_courses = eval_data.recommended_courses
-        if not recommended_courses and match_data.missing_skills:
-            recommended_courses = [f"Complete Course on {skill} (Coursera/Udemy)" for skill in match_data.missing_skills[:3]]
+        raw_courses = eval_data.recommended_courses
+        if not raw_courses and match_data.missing_skills:
+            raw_courses = [f"Mastering {skill} Course" for skill in match_data.missing_skills[:3]]
+
+        recommended_courses = []
+        for c in raw_courses:
+            if "http://" in c or "https://" in c:
+                recommended_courses.append(c)
+            else:
+                clean = c.strip()
+                query = urllib.parse.quote(clean)
+                recommended_courses.append(f"{clean} — https://www.coursera.org/search?query={query}")
 
         return CandidateAnalysisResult(
             candidate_name=candidate_data.candidate_name,
